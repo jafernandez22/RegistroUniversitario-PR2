@@ -1,28 +1,56 @@
-package com.universidad.repository; // Define el paquete al que pertenece esta clase
+package com.universidad.repository;
 
-import com.universidad.model.Estudiante; // Importa la clase Estudiante del paquete model
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository; // Importa la anotación Repository de Spring
-import org.springframework.data.jpa.repository.Lock;
-import jakarta.persistence.LockModeType;
-import java.util.Optional;
 
-@Repository // Anotación que indica que esta clase es un repositorio de Spring
-public interface EstudianteRepository extends JpaRepository<Estudiante, Long> {
-    // No es necesario implementar métodos básicos como findAll, ya que JpaRepository los proporciona automáticamente.
+import com.universidad.model.Estudiante;
+import org.springframework.stereotype.Repository;
 
-    Boolean existsByEmail(String email); // Método para verificar si existe un estudiante por su correo electrónico
-    Boolean existsByNumeroInscripcion(String numeroInscripcion); // Método para verificar si existe un estudiante por su número de inscripción
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
-    // Método para encontrar un estudiante por su número de inscripción
-    Estudiante findByNumeroInscripcion(String numeroInscripcion); 
-
-    // Método para encontrar un estudiante por su estado
-    Estudiante findByEstado(String estado); // Método para encontrar un estudiante por su estado
-
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<Estudiante> findById(Long id); // Método para encontrar un estudiante por su ID con bloqueo pesimista
-    // Este método se utiliza para evitar condiciones de carrera al actualizar el estudiante
+@Repository
+public class EstudianteRepository {
+    private final Map<Long, Estudiante> estudiantes = new ConcurrentHashMap<>();
+    private final AtomicLong idContador = new AtomicLong(1);
     
-
+    public Estudiante save(Estudiante estudiante) {
+        if (estudiante.getId() == null) {
+            estudiante.setId(idContador.getAndIncrement());
+        }
+        estudiantes.put(estudiante.getId(), estudiante);
+        return estudiante;
+    }
+    
+    public List<Estudiante> findAll() {
+        return new ArrayList<Estudiante>(estudiantes.values());
+    }
+    
+    public void deleteById(Long id) {
+        estudiantes.remove(id);
+    }
+    
+    // Método para inicializar algunos datos de ejemplo, con la ayuda de LOMBOK
+    public void init() {
+        Estudiante student1 = Estudiante.builder()
+                .nombre("Juan")
+                .apellido("Pérez")
+                .email("juan.perez@example.com")
+                .fechaNacimiento(LocalDate.of(2000, 5, 15))
+                .numeroInscripcion("S001")
+                .build();
+                
+        Estudiante student2 = Estudiante.builder()
+                .nombre("María")
+                .apellido("González")
+                .email("maria.gonzalez@example.com")
+                .fechaNacimiento(LocalDate.of(2001, 8, 22))
+                .numeroInscripcion("S002")  
+                .build();
+                
+        save(student1);
+        save(student2);
+    }
 }
