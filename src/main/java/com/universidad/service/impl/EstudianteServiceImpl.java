@@ -1,9 +1,13 @@
 package com.universidad.service.impl; // Define el paquete al que pertenece esta clase
 
 import com.universidad.dto.EstudianteDTO; // Importa la clase EstudianteDTO del paquete dto
+import com.universidad.dto.InscripcionDTO;
 import com.universidad.model.Estudiante; // Importa la clase Estudiante del paquete model
+import com.universidad.model.Inscripcion;
 import com.universidad.model.Materia;
 import com.universidad.repository.EstudianteRepository; // Importa la clase EstudianteRepository del paquete repository
+import com.universidad.repository.InscripcionRepository;
+import com.universidad.repository.MateriaRepository;
 import com.universidad.service.IEstudianteService; // Importa la interfaz IEstudianteService del paquete service
 import com.universidad.validation.EstudianteValidator; // Importa la clase EstudianteValidator del paquete validation
 
@@ -23,6 +27,12 @@ public class EstudianteServiceImpl implements IEstudianteService { // Define la 
 
     @Autowired
     private EstudianteRepository estudianteRepository; // Inyección de dependencias del repositorio de estudiantes
+
+    @Autowired
+    private InscripcionRepository inscripcionRepository;
+
+    @Autowired
+    private MateriaRepository materiaRepository;
 
     @Autowired // Inyección de dependencias del validador de estudiantes
     private EstudianteValidator estudianteValidator; // Declara una variable para el validador de estudiantes
@@ -72,6 +82,7 @@ public class EstudianteServiceImpl implements IEstudianteService { // Define la 
                 .orElseThrow(() -> new RuntimeException("Estudiante no encontrado"));
         return estudiante.getMaterias();
     }
+
 
     @Override
     @CachePut(value = "estudiante", key = "#result.numeroInscripcion")
@@ -168,4 +179,77 @@ public class EstudianteServiceImpl implements IEstudianteService { // Define la 
                 .motivoBaja(estudianteDTO.getMotivoBaja()) // Asigna el motivo de baja (puede ser null si no se desea mostrar)
                 .build(); // Construye el objeto Estudiante
     }
+
+
+    //Inscripcion
+    @Override
+    public List<InscripcionDTO> obtenerInscripcionesPorEstudiante(Long idEstudiante) {
+        return inscripcionRepository.findAllByEstudianteId(idEstudiante)
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public InscripcionDTO registrarInscripcion(Long idEstudiante, InscripcionDTO inscripcionDTO) {
+        // Validar la existencia de estudiante
+        Estudiante estudiante = estudianteRepository.findById(idEstudiante)
+                .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado"));
+
+        // Validar la existencia de materia
+        Materia materia = materiaRepository.findById(inscripcionDTO.getIdMateria())
+                .orElseThrow(() -> new IllegalArgumentException("Materia no encontrada"));
+
+        // Evitar duplicados
+        if (inscripcionRepository.existsByEstudianteIdAndMateriaId(estudiante.getId(), materia.getId())) {
+            throw new IllegalStateException("El estudiante ya está inscrito en esta materia.");
+        }
+
+        // Registrar inscripción
+        Inscripcion inscripcion = Inscripcion.builder()
+                .estudiante(estudiante)
+                .materia(materia)
+                .fechaInscripcion(LocalDate.now())
+                .estado("Activo")
+                .build();
+
+        inscripcion = inscripcionRepository.save(inscripcion);
+        return mapToDTO(inscripcion);
+    }
+
+    @Override
+    @Transactional
+    public InscripcionDTO actualizarInscripcion(Long idInscripcion, InscripcionDTO inscripcionDTO) {
+        Inscripcion inscripcion = inscripcionRepository.findById(idInscripcion)
+                .orElseThrow(() -> new IllegalArgumentException("Inscripción no encontrada"));
+
+        // Actualizar el estado de la inscripción
+        inscripcion.setEstado(inscripcionDTO.getEstado());
+        inscripcion = inscripcionRepository.save(inscripcion);
+        return mapToDTO(inscripcion);
+    }
+
+    @Override
+    @Transactional
+    public void eliminarInscripcion(Long idInscripcion) {
+        if (!inscripcionRepository.existsById(idInscripcion)) {
+            throw new IllegalArgumentException("Inscripción no encontrada.");
+        }
+        inscripcionRepository.deleteById(idInscripcion);
+    }
+
+    private InscripcionDTO mapToDTO(Inscripcion inscripcion) {
+        return InscripcionDTO.builder()
+                .id(inscripcion.getId())
+                .idEstudiante(inscripcion.getEstudiante().getId())
+                .idMateria(inscripcion.getMateria().getId())
+                .fechaInscripcion(inscripcion.getFechaInscripcion())
+                .estado(inscripcion.getEstado())
+                .build();
+    }
+
+
+
+
 }

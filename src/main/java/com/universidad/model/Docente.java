@@ -7,7 +7,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -22,10 +24,12 @@ public class Docente extends Persona {
 
     @Column(name = "departamento", nullable = false) // Columna no nula
     private String departamento;
-
     /**
      * Lista de evaluaciones asociadas al docente.
      */
     @OneToMany(mappedBy = "docente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EvaluacionDocente> evaluaciones; // Lista de evaluaciones asociadas al docente
+
+    @ManyToMany(mappedBy = "docente")
+    private Set<Materia> materias = new HashSet<>();
 }

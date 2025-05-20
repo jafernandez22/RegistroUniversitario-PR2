@@ -1,6 +1,7 @@
 package com.universidad.dto;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -28,4 +29,8 @@ public class MateriaDTO implements Serializable {
      * Lista de IDs de materias para las que esta materia es prerequisito.
      */
     private List<Long> esPrerequisitoDe;
+
+    @Builder.Default // Inicialización predeterminada a lista vacía
+    private List<Long> docentes = new ArrayList<>();
+
 }

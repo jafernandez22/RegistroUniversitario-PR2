@@ -1,6 +1,7 @@
 package com.universidad.service; // Define el paquete al que pertenece esta interfaz
 
 import com.universidad.dto.EstudianteDTO; // Importa la clase EstudianteDTO del paquete dto
+import com.universidad.dto.InscripcionDTO;
 import com.universidad.model.Estudiante;
 import com.universidad.model.Materia;
 
@@ -67,4 +68,15 @@ public interface IEstudianteService { // Define la interfaz IEstudianteService
      * @return
      */
     Estudiante obtenerEstudianteConBloqueo(Long id); // Método para obtener un estudiante por su ID con bloqueo pesimista
+
+    //INSCRIPCION
+    // Métodos de CRUD existentes para estudiantes...
+    List<InscripcionDTO> obtenerInscripcionesPorEstudiante(Long idEstudiante);
+
+    InscripcionDTO registrarInscripcion(Long idEstudiante, InscripcionDTO inscripcionDTO);
+
+    InscripcionDTO actualizarInscripcion(Long idInscripcion, InscripcionDTO inscripcionDTO);
+
+    void eliminarInscripcion(Long idInscripcion);
+
 }

@@ -8,7 +8,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter // Genera un getter para todos los campos de la clase
 @Setter // Genera un setter para todos los campos de la clase
@@ -48,9 +50,16 @@ public class Materia implements Serializable {
     // El número de créditos de la materia no puede ser nulo
     private Integer creditos;
 
-    @Version // Anotación para manejar la versión de la entidad
-    private Long version; // Campo para manejar la versión de la entidad, útil para el control de concurrencia
+    @Version
+    @Column(nullable = false, columnDefinition = "bigint default 1")
+    private Long version = 1L; // Inicialización explícita
 
+    @PrePersist
+    public void initializeVersion() {
+        if (this.version == null) {
+            this.version = 1L;
+        }
+    }
     /**
      * Lista de materias que son prerequisitos para esta materia.
      */
@@ -97,6 +106,26 @@ public class Materia implements Serializable {
             }
         }
         return false;
+    }
+
+    @ManyToMany
+    @JoinTable(
+            name = "docente_materia",
+            joinColumns = @JoinColumn(name = "id_materia"),
+            inverseJoinColumns = @JoinColumn(name = "id_docente")
+    )
+    @Builder.Default
+    private Set<Docente> docente = new HashSet<>();
+
+    // Métodos auxiliares
+    public void agregarDocente(Docente docente) {
+        this.docente.add(docente);
+        docente.getMaterias().add(this);
+    }
+
+    public void removerDocente(Docente docente) {
+        this.docente.remove(docente);
+        docente.getMaterias().remove(this);
     }
 
 }

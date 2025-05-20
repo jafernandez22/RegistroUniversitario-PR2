@@ -96,4 +96,17 @@ public class MateriaController {
         }
         return ResponseEntity.ok(circulo);
     }
+
+    @PostMapping("/{idMateria}/docentes/{idDocente}")
+    public ResponseEntity<String> asignarDocente(@PathVariable Long idMateria, @PathVariable Long idDocente) {
+        materiaService.asignarDocente(idMateria, idDocente);
+        return ResponseEntity.ok("Docente asignado a la materia correctamente");
+    }
+
+    @DeleteMapping("/{idMateria}/docentes/{idDocente}")
+    public ResponseEntity<String> removerDocente(@PathVariable Long idMateria, @PathVariable Long idDocente) {
+        materiaService.removerDocente(idMateria, idDocente);
+        return ResponseEntity.ok("Docente eliminado de la materia correctamente");
+    }
+
 }

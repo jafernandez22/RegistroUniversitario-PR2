@@ -1,15 +1,19 @@
 package com.universidad.service.impl;
 
+import com.universidad.model.Docente;
 import com.universidad.model.Materia;
+import com.universidad.repository.DocenteRepository;
 import com.universidad.repository.MateriaRepository;
 import com.universidad.service.IMateriaService;
 import com.universidad.dto.MateriaDTO;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +22,8 @@ public class MateriaServiceImpl implements IMateriaService {
 
     @Autowired
     private MateriaRepository materiaRepository;
+    @Autowired
+    private DocenteRepository docenteRepository;
 
     // Método utilitario para mapear Materia a MateriaDTO
     private MateriaDTO mapToDTO(Materia materia) {
@@ -31,13 +37,15 @@ public class MateriaServiceImpl implements IMateriaService {
                     materia.getPrerequisitos().stream().map(Materia::getId).collect(Collectors.toList()) : null)
                 .esPrerequisitoDe(materia.getEsPrerequisitoDe() != null ?
                     materia.getEsPrerequisitoDe().stream().map(Materia::getId).collect(Collectors.toList()) : null)
+                .docentes(materia.getDocente() != null ?
+                        materia.getDocente().stream().map(docente -> docente.getId()).collect(Collectors.toList()) : new ArrayList<>())
                 .build();
     }
 
     @Override
     @Cacheable(value = "materias")
     public List<MateriaDTO> obtenerTodasLasMaterias() {
-        return materiaRepository.findAll().stream().map(this::mapToDTO).collect(Collectors.toList());
+        return materiaRepository.findAllByOrderByIdAsc().stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
     @Override
@@ -84,4 +92,34 @@ public class MateriaServiceImpl implements IMateriaService {
     public void eliminarMateria(Long id) {
         materiaRepository.deleteById(id);
     }
+
+    @Transactional
+    @Override
+    public void asignarDocente(Long idMateria, Long idDocente) {
+        Materia materia = materiaRepository.findById(idMateria)
+                .orElseThrow(() -> new RuntimeException("Materia no encontrada"));
+
+        Docente docente = docenteRepository.findById(idDocente)
+                .orElseThrow(() -> new RuntimeException("Docente no encontrado"));
+
+        if (!materia.getDocente().contains(docente)) {
+            materia.getDocente().add(docente);
+            materiaRepository.saveAndFlush(materia); // Guarda y persiste la relación
+        }
+    }
+    @Transactional
+    @Override
+    public void removerDocente(Long idMateria, Long idDocente) {
+        Materia materia = materiaRepository.findById(idMateria)
+                .orElseThrow(() -> new RuntimeException("Materia no encontrada"));
+
+        Docente docente = docenteRepository.findById(idDocente)
+                .orElseThrow(() -> new RuntimeException("Docente no encontrado"));
+
+        if (materia.getDocente().contains(docente)) {
+            materia.getDocente().remove(docente);
+            materiaRepository.saveAndFlush(materia); // Actualiza la relación
+        }
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.universidad.controller; // Define el paquete al que pertenece esta clase
 
 import com.universidad.dto.EstudianteDTO; // Importa la clase EstudianteDTO del paquete dto
+import com.universidad.dto.InscripcionDTO;
 import com.universidad.model.Materia;
 import com.universidad.model.Estudiante;
 import com.universidad.service.IEstudianteService; // Importa la interfaz IEstudianteService del paquete service
@@ -100,4 +101,30 @@ public class EstudianteController { // Define la clase EstudianteController
         return ResponseEntity.ok(estudiantesActivos); // Retorna una respuesta HTTP 200 OK con la lista de estudiantes activos
     }
 
+    //Inscripcion
+    @GetMapping("/{idEstudiante}/inscripciones")
+    public ResponseEntity<List<InscripcionDTO>> obtenerInscripcionesPorEstudiante(
+            @PathVariable Long idEstudiante) {
+        return ResponseEntity.ok(estudianteService.obtenerInscripcionesPorEstudiante(idEstudiante));
+    }
+
+    @PostMapping("/{idEstudiante}/inscripciones")
+    public ResponseEntity<InscripcionDTO> registrarInscripcion(
+            @PathVariable Long idEstudiante,
+            @RequestBody InscripcionDTO inscripcionDTO) {
+        return ResponseEntity.ok(estudianteService.registrarInscripcion(idEstudiante, inscripcionDTO));
+    }
+
+    @PutMapping("/inscripciones/{idInscripcion}")
+    public ResponseEntity<InscripcionDTO> actualizarInscripcion(
+            @PathVariable Long idInscripcion,
+            @RequestBody InscripcionDTO inscripcionDTO) {
+        return ResponseEntity.ok(estudianteService.actualizarInscripcion(idInscripcion, inscripcionDTO));
+    }
+
+    @DeleteMapping("/inscripciones/{idInscripcion}")
+    public ResponseEntity<Void> eliminarInscripcion(@PathVariable Long idInscripcion) {
+        estudianteService.eliminarInscripcion(idInscripcion);
+        return ResponseEntity.noContent().build();
+    }
 }
