@@ -87,7 +87,9 @@ Sigue los pasos a continuación para correr el proyecto en tu entorno local:
 
 ## Seguridad
 El sistema implementa seguridad basada en roles:
-- ADMIN: Acceso completo a todas las funcionalidades
-- DOCENTE: Gestión de materias asignadas y evaluaciones
-- ESTUDIANTE: Inscripción a materias y consulta de información
+
+- ADMIN: Acceso completo a todas las funcionalidades.
+- DOCENTE: Gestión de materias asignadas y evaluaciones.
+- ESTUDIANTE: Inscripción a materias y consulta de información.
+
 La autenticación se realiza mediante JWT (JSON Web Tokens) que deben incluirse en el encabezado Authorization de las solicitudes.
