@@ -83,7 +83,7 @@ Sigue los pasos a continuación para correr el proyecto en tu entorno local:
 
 5. Accede a la aplicación desde tu navegador o a través de herramientas como Postman en:
    - **URL principal**: [http://localhost:8080](http://localhost:8080)
-   - **Documentación API (Swagger)**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+   - **Documentación API (Swagger)**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui/index.html#/)
 
 ## Seguridad
 El sistema implementa seguridad basada en roles:
